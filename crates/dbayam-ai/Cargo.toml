@@ -1,0 +1,23 @@
+[package]
+name = "dbayam-ai"
+description = "AI assistant (Anthropic / OpenAI-compatible) for DBayam"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+dbayam-core.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+async-trait.workspace = true
+ureq.workspace = true
+rustls.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true }
+parking_lot.workspace = true

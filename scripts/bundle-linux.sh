@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Build DBiji for Linux (x86_64 or aarch64, the machine's) into dist/:
+# Build DBayam for Linux (x86_64 or aarch64, the machine's) into dist/:
 #
-#   DBiji-<version>-linux-<arch>.tar.gz          bin/dbiji, its desktop entry and icons (any distribution)
-#   DBiji-<version>-linux-<arch>.AppImage        one file that runs on most distributions
-#   DBiji-<version>-linux-<deb arch>.deb         Debian, Ubuntu, Linux Mint, Pop!_OS, elementary …
-#   DBiji-<version>-linux-<arch>.rpm             Fedora, RHEL / Rocky / Alma, openSUSE …
-#   DBiji-<version>-linux-<arch>.pkg.tar.zst     Arch Linux, Manjaro, EndeavourOS …
+#   DBayam-<version>-linux-<arch>.tar.gz          bin/dbayam, its desktop entry and icons (any distribution)
+#   DBayam-<version>-linux-<arch>.AppImage        one file that runs on most distributions
+#   DBayam-<version>-linux-<deb arch>.deb         Debian, Ubuntu, Linux Mint, Pop!_OS, elementary …
+#   DBayam-<version>-linux-<arch>.rpm             Fedora, RHEL / Rocky / Alma, openSUSE …
+#   DBayam-<version>-linux-<arch>.pkg.tar.zst     Arch Linux, Manjaro, EndeavourOS …
 #
 # Usage:
 #   scripts/bundle-linux.sh             # builds the release binary first
-#   scripts/bundle-linux.sh --no-build  # packages target/release/dbiji
+#   scripts/bundle-linux.sh --no-build  # packages target/release/dbayam
 #
 # The packages are made with nfpm and the AppImage with appimagetool, both
 # downloaded into target/ at pinned versions when missing. The binary links
@@ -43,26 +43,26 @@ esac
 DIST="$ROOT/dist"
 TOOLS="$ROOT/target/packaging-tools"
 STAGE="$ROOT/target/linux-stage"
-NAME="DBiji-$VERSION-linux"
+NAME="DBayam-$VERSION-linux"
 mkdir -p "$DIST" "$TOOLS"
 
 if [[ $BUILD -eq 1 ]]; then
-  echo "==> Building DBiji $VERSION (release, $ARCH)"
-  cargo build --release --locked -p dbiji-app
+  echo "==> Building DBayam $VERSION (release, $ARCH)"
+  cargo build --release --locked -p dbayam-app
 fi
-BIN="$ROOT/target/release/dbiji"
+BIN="$ROOT/target/release/dbayam"
 [[ -x "$BIN" ]] || { echo "missing $BIN" >&2; exit 1; }
 SAID="$("$BIN" --version)"
-[[ "$SAID" == "dbiji $VERSION" ]] || { echo "$BIN --version said '$SAID', expected $VERSION" >&2; exit 1; }
+[[ "$SAID" == "dbayam $VERSION" ]] || { echo "$BIN --version said '$SAID', expected $VERSION" >&2; exit 1; }
 GLIBC="$(objdump -T "$BIN" | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1)"
 echo "==> $SAID, $(du -h "$BIN" | cut -f1), needs $GLIBC"
 
 # The files every format installs, under /usr.
 rm -rf "$STAGE"
-install -Dm755 "$BIN" "$STAGE/usr/bin/dbiji"
-install -Dm644 packaging/linux/dev.dbiji.DBiji.desktop "$STAGE/usr/share/applications/dev.dbiji.DBiji.desktop"
-install -Dm644 crates/dbiji-app/assets/icon-256.png "$STAGE/usr/share/icons/hicolor/256x256/apps/dev.dbiji.DBiji.png"
-install -Dm644 crates/dbiji-app/assets/icon.svg "$STAGE/usr/share/icons/hicolor/scalable/apps/dev.dbiji.DBiji.svg"
+install -Dm755 "$BIN" "$STAGE/usr/bin/dbayam"
+install -Dm644 packaging/linux/dev.dbayam.DBayam.desktop "$STAGE/usr/share/applications/dev.dbayam.DBayam.desktop"
+install -Dm644 crates/dbayam-app/assets/icon-256.png "$STAGE/usr/share/icons/hicolor/256x256/apps/dev.dbayam.DBayam.png"
+install -Dm644 crates/dbayam-app/assets/icon.svg "$STAGE/usr/share/icons/hicolor/scalable/apps/dev.dbayam.DBayam.svg"
 
 echo "==> $NAME-$ARCH.tar.gz"
 rm -rf "$STAGE/tar" && mkdir -p "$STAGE/tar/$NAME-$ARCH"
@@ -75,12 +75,12 @@ if [[ ! -x "$APPIMAGETOOL" ]]; then
   curl -fsSL -o "$APPIMAGETOOL" "https://github.com/AppImage/appimagetool/releases/download/$APPIMAGETOOL_VERSION/appimagetool-$ARCH.AppImage"
   chmod +x "$APPIMAGETOOL"
 fi
-APPDIR="$STAGE/DBiji.AppDir"
+APPDIR="$STAGE/DBayam.AppDir"
 mkdir -p "$APPDIR"
 cp -R "$STAGE/usr" "$APPDIR/usr"
-cp packaging/linux/dev.dbiji.DBiji.desktop "$APPDIR/"
-cp crates/dbiji-app/assets/icon-256.png "$APPDIR/dev.dbiji.DBiji.png"
-ln -s usr/bin/dbiji "$APPDIR/AppRun"
+cp packaging/linux/dev.dbayam.DBayam.desktop "$APPDIR/"
+cp crates/dbayam-app/assets/icon-256.png "$APPDIR/dev.dbayam.DBayam.png"
+ln -s usr/bin/dbayam "$APPDIR/AppRun"
 # No FUSE needed (CI runners and containers have none).
 APPIMAGE_EXTRACT_AND_RUN=1 ARCH="$ARCH" "$APPIMAGETOOL" --no-appstream "$APPDIR" "$DIST/$NAME-$ARCH.AppImage" >/dev/null
 
@@ -93,7 +93,7 @@ if [[ ! -x "$NFPM" ]]; then
     && tar -xzf "$NFPM_TAR" nfpm && mv nfpm "nfpm-$NFPM_VERSION" && rm "$NFPM_TAR")
 fi
 cat >"$STAGE/nfpm.yaml" <<EOF
-name: dbiji
+name: dbayam
 arch: $NFPM_ARCH
 platform: linux
 version: $VERSION
@@ -101,8 +101,8 @@ release: 1
 section: database
 priority: optional
 maintainer: Tommy Lumos Empire
-vendor: DBiji
-homepage: https://github.com/ilhamnadhif/dbiji
+vendor: DBayam
+homepage: https://github.com/rajebdev/dbayam
 license: MIT OR Apache-2.0
 description: |-
   A lightweight SQL database client.
@@ -110,15 +110,15 @@ description: |-
   in one small native program: SQL editor with autocomplete, data grid,
   export / import, ER diagrams, compare and more.
 contents:
-  - src: $STAGE/usr/bin/dbiji
-    dst: /usr/bin/dbiji
+  - src: $STAGE/usr/bin/dbayam
+    dst: /usr/bin/dbayam
     file_info: { mode: 0755 }
-  - src: $STAGE/usr/share/applications/dev.dbiji.DBiji.desktop
-    dst: /usr/share/applications/dev.dbiji.DBiji.desktop
-  - src: $STAGE/usr/share/icons/hicolor/256x256/apps/dev.dbiji.DBiji.png
-    dst: /usr/share/icons/hicolor/256x256/apps/dev.dbiji.DBiji.png
-  - src: $STAGE/usr/share/icons/hicolor/scalable/apps/dev.dbiji.DBiji.svg
-    dst: /usr/share/icons/hicolor/scalable/apps/dev.dbiji.DBiji.svg
+  - src: $STAGE/usr/share/applications/dev.dbayam.DBayam.desktop
+    dst: /usr/share/applications/dev.dbayam.DBayam.desktop
+  - src: $STAGE/usr/share/icons/hicolor/256x256/apps/dev.dbayam.DBayam.png
+    dst: /usr/share/icons/hicolor/256x256/apps/dev.dbayam.DBayam.png
+  - src: $STAGE/usr/share/icons/hicolor/scalable/apps/dev.dbayam.DBayam.svg
+    dst: /usr/share/icons/hicolor/scalable/apps/dev.dbayam.DBayam.svg
 overrides:
   deb:
     depends:

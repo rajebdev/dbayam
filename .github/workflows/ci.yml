@@ -24,7 +24,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libgl1-mesa-dev libwayland-dev libxcb1-dev libxcursor-dev libxrandr-dev libxi-dev libgtk-3-dev
       - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check
-      - run: cargo clippy --workspace --exclude dbiji-driver-duckdb --all-targets -- -D warnings
+      - run: cargo clippy --workspace --exclude dbayam-driver-duckdb --all-targets -- -D warnings
 
   unit-tests:
     strategy:
@@ -46,8 +46,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       # Code only Windows compiles (the lint job runs on Linux).
       - if: runner.os == 'Windows'
-        run: cargo clippy --workspace --exclude dbiji-driver-duckdb --all-targets -- -D warnings
-      - run: cargo test --workspace --exclude dbiji-driver-duckdb
+        run: cargo clippy --workspace --exclude dbayam-driver-duckdb --all-targets -- -D warnings
+      - run: cargo test --workspace --exclude dbayam-driver-duckdb
 
   integration:
     runs-on: ubuntu-24.04
@@ -56,51 +56,63 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: dbiji
-          POSTGRES_PASSWORD: dbiji
-          POSTGRES_DB: dbiji
+          POSTGRES_USER: dbayam
+          POSTGRES_PASSWORD: dbayam
+          POSTGRES_DB: dbayam
         ports: ["55432:5432"]
         options: >-
-          --health-cmd "pg_isready -U dbiji" --health-interval 5s --health-timeout 5s --health-retries 20
+          --health-cmd "pg_isready -U dbayam" --health-interval 5s --health-timeout 5s --health-retries 20
       mssql:
         image: mcr.microsoft.com/mssql/server:2022-latest
         env:
           ACCEPT_EULA: "Y"
-          MSSQL_SA_PASSWORD: Dbiji_test1
+          MSSQL_SA_PASSWORD: Dbayam_test1
         ports: ["51433:1433"]
         options: >-
-          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Dbiji_test1 -Q 'SELECT 1' -b -o /dev/null"
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Dbayam_test1 -Q 'SELECT 1' -b -o /dev/null"
           --health-interval 10s --health-timeout 10s --health-retries 30
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: dbiji
-          MYSQL_DATABASE: dbiji
+          MYSQL_ROOT_PASSWORD: dbayam
+          MYSQL_DATABASE: dbayam
         ports: ["53306:3306"]
         options: >-
-          --health-cmd "mysqladmin ping -pdbiji" --health-interval 5s --health-timeout 5s --health-retries 30
+          --health-cmd "mysqladmin ping -pdbayam" --health-interval 5s --health-timeout 5s --health-retries 30
       mariadb:
         image: mariadb:11
         env:
-          MARIADB_ROOT_PASSWORD: dbiji
-          MARIADB_DATABASE: dbiji
+          MARIADB_ROOT_PASSWORD: dbayam
+          MARIADB_DATABASE: dbayam
         ports: ["53307:3306"]
         options: >-
           --health-cmd "healthcheck.sh --connect --innodb_initialized" --health-interval 5s --health-timeout 5s --health-retries 30
       clickhouse:
         image: clickhouse/clickhouse-server:latest
         env:
-          CLICKHOUSE_USER: dbiji
-          CLICKHOUSE_PASSWORD: dbiji
+          CLICKHOUSE_USER: dbayam
+          CLICKHOUSE_PASSWORD: dbayam
           CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
         ports: ["58123:8123"]
+      mongodb:
+        image: mongo:7
+        ports: ["57017:27017"]
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ping: 1})'" --health-interval 5s --health-timeout 5s --health-retries 30
+      redis:
+        image: redis:7
+        ports: ["56379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 30
     env:
-      DBIJI_TEST_PG: postgres://dbiji:dbiji@127.0.0.1:55432/dbiji
-      DBIJI_TEST_MYSQL: mysql://root:dbiji@127.0.0.1:53306/dbiji
-      DBIJI_TEST_MARIADB: mariadb://root:dbiji@127.0.0.1:53307/dbiji
-      DBIJI_TEST_CLICKHOUSE: http://dbiji:dbiji@127.0.0.1:58123
-      DBIJI_TEST_COCKROACH: cockroachdb://root@127.0.0.1:26257/defaultdb?sslmode=disable
-      DBIJI_TEST_MSSQL: sqlserver://sa:Dbiji_test1@127.0.0.1:51433/master
+      DBAYAM_TEST_PG: postgres://dbayam:dbayam@127.0.0.1:55432/dbayam
+      DBAYAM_TEST_MYSQL: mysql://root:dbayam@127.0.0.1:53306/dbayam
+      DBAYAM_TEST_MARIADB: mariadb://root:dbayam@127.0.0.1:53307/dbayam
+      DBAYAM_TEST_CLICKHOUSE: http://dbayam:dbayam@127.0.0.1:58123
+      DBAYAM_TEST_COCKROACH: cockroachdb://root@127.0.0.1:26257/defaultdb?sslmode=disable
+      DBAYAM_TEST_MSSQL: sqlserver://sa:Dbayam_test1@127.0.0.1:51433/master
+      DBAYAM_TEST_MONGO: 127.0.0.1:57017
+      DBAYAM_TEST_REDIS: 127.0.0.1:56379
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
@@ -113,21 +125,22 @@ jobs:
           for i in $(seq 1 60); do docker exec crdb ./cockroach sql --insecure -e "select 1" && break; sleep 2; done
       - name: Driver and end-to-end integration tests
         run: >-
-          cargo test -p dbiji-driver-postgres -p dbiji-driver-mysql -p dbiji-driver-sqlite
-          -p dbiji-driver-clickhouse -p dbiji-driver-duckdb -p dbiji-driver-mssql -p dbiji-transfer
-          -p dbiji-compare -p dbiji-tasks -p dbiji-app -- --test-threads=4
+          cargo test -p dbayam-driver-postgres -p dbayam-driver-mysql -p dbayam-driver-sqlite
+          -p dbayam-driver-clickhouse -p dbayam-driver-duckdb -p dbayam-driver-mssql
+          -p dbayam-driver-mongodb -p dbayam-driver-redis -p dbayam-transfer
+          -p dbayam-compare -p dbayam-tasks -p dbayam-app -- --test-threads=4
 
-  # The oldest server versions DBiji supports: catalog columns, syntax or TLS
+  # The oldest server versions DBayam supports: catalog columns, syntax or TLS
   # ciphers of newer versions fail here (PostgreSQL 11's attgenerated, MySQL
   # 5.7's DHE-only TLS).
   integration-oldest:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
-      DBIJI_TEST_PG: postgres://dbiji:dbiji@127.0.0.1:55411/dbiji
-      DBIJI_TEST_MYSQL: mysql://root:dbiji@127.0.0.1:53357/dbiji
-      DBIJI_TEST_MARIADB: mariadb://root:dbiji@127.0.0.1:53316/dbiji
-      DBIJI_TEST_MSSQL: sqlserver://sa:Dbiji_test1@127.0.0.1:51417/master
+      DBAYAM_TEST_PG: postgres://dbayam:dbayam@127.0.0.1:55411/dbayam
+      DBAYAM_TEST_MYSQL: mysql://root:dbayam@127.0.0.1:53357/dbayam
+      DBAYAM_TEST_MARIADB: mariadb://root:dbayam@127.0.0.1:53316/dbayam
+      DBAYAM_TEST_MSSQL: sqlserver://sa:Dbayam_test1@127.0.0.1:51417/master
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
@@ -145,19 +158,19 @@ jobs:
             done
             return 1
           }
-          start pg11 -e POSTGRES_USER=dbiji -e POSTGRES_PASSWORD=dbiji -e POSTGRES_DB=dbiji -p 55411:5432 postgres:11
-          start mysql57 -e MYSQL_ROOT_PASSWORD=dbiji -e MYSQL_DATABASE=dbiji -p 53357:3306 mysql:5.7
-          start mariadb106 -e MARIADB_ROOT_PASSWORD=dbiji -e MARIADB_DATABASE=dbiji -p 53316:3306 mariadb:10.6
-          start mssql2017 -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=Dbiji_test1 -p 51417:1433 mcr.microsoft.com/mssql/server:2017-latest
+          start pg11 -e POSTGRES_USER=dbayam -e POSTGRES_PASSWORD=dbayam -e POSTGRES_DB=dbayam -p 55411:5432 postgres:11
+          start mysql57 -e MYSQL_ROOT_PASSWORD=dbayam -e MYSQL_DATABASE=dbayam -p 53357:3306 mysql:5.7
+          start mariadb106 -e MARIADB_ROOT_PASSWORD=dbayam -e MARIADB_DATABASE=dbayam -p 53316:3306 mariadb:10.6
+          start mssql2017 -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=Dbayam_test1 -p 51417:1433 mcr.microsoft.com/mssql/server:2017-latest
           ready() { for i in $(seq 1 120); do "$@" >/dev/null 2>&1 && return 0; sleep 2; done; echo "not ready: $*"; return 1; }
-          ready docker exec pg11 pg_isready -U dbiji
-          ready docker exec mysql57 mysql -uroot -pdbiji -e "SELECT 1"
+          ready docker exec pg11 pg_isready -U dbayam
+          ready docker exec mysql57 mysql -uroot -pdbayam -e "SELECT 1"
           ready docker exec mariadb106 healthcheck.sh --connect --innodb_initialized
-          ready docker exec mssql2017 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Dbiji_test1 -Q "SELECT 1" -b
+          ready docker exec mssql2017 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Dbayam_test1 -Q "SELECT 1" -b
       - name: Driver and end-to-end tests on the oldest servers
         run: >-
-          cargo test -p dbiji-driver-postgres -p dbiji-driver-mysql -p dbiji-driver-mssql -p dbiji-transfer
-          -p dbiji-compare -p dbiji-tasks -p dbiji-app -- --test-threads=4
+          cargo test -p dbayam-driver-postgres -p dbayam-driver-mysql -p dbayam-driver-mssql -p dbayam-transfer
+          -p dbayam-compare -p dbayam-tasks -p dbayam-app -- --test-threads=4
 
   audit:
     runs-on: ubuntu-24.04
@@ -174,14 +187,16 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build release
-        run: cargo build --release -p dbiji-app
-      - name: Binary size (< 40 MB)
+        run: cargo build --release -p dbayam-app
+      # The MongoDB and Redis drivers (official `mongodb` and `redis` crates)
+      # added ~7 MiB: the budget grew from 40 MiB to 48 MiB with them.
+      - name: Binary size (< 48 MB)
         run: |
-          size=$(stat -f%z target/release/dbiji)
+          size=$(stat -f%z target/release/dbayam)
           echo "binary size: $size bytes"
-          test "$size" -lt 41943040
+          test "$size" -lt 50331648
       - name: Headless benchmarks (startup, memory, grid, editor)
-        run: target/release/dbiji --bench all --bench-report bench.json
+        run: target/release/dbayam --bench all --bench-report bench.json
       - uses: actions/upload-artifact@v7
         with:
           name: benchmarks
@@ -242,7 +257,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: linux-${{ matrix.runner }}
-          path: dist/DBiji-*-linux-*
+          path: dist/DBayam-*-linux-*
 
   publish:
     if: startsWith(github.ref, 'refs/tags/v')

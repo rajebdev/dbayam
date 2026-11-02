@@ -1,0 +1,24 @@
+[package]
+name = "dbayam-driver-duckdb"
+description = "DuckDB driver for DBayam (embedded engine, optional)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+dbayam-core.workspace = true
+tokio.workspace = true
+async-trait.workspace = true
+# `json`: the JSON extension is linked statically, so the JSON type works
+# without downloading extensions at run time.
+duckdb = { workspace = true, features = ["json"] }
+chrono.workspace = true
+tracing.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true }
+tempfile.workspace = true

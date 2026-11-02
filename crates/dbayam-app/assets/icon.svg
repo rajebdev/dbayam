@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#0f7259"/>
+      <stop offset="1" stop-color="#052a24"/>
+    </linearGradient>
+    <linearGradient id="db" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#89b4cd"/>
+    </linearGradient>
+    <linearGradient id="dbTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#d6ecfa"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#fffdf1"/>
+      <stop offset="1" stop-color="#eed49b"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#f4dfab"/>
+      <stop offset="1" stop-color="#cda24f"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0.05" y1="1" x2="0.65" y2="0">
+      <stop offset="0" stop-color="#2a8330"/>
+      <stop offset="0.5" stop-color="#57bb39"/>
+      <stop offset="1" stop-color="#cdf77a"/>
+    </linearGradient>
+    <linearGradient id="comb" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff7a52"/>
+      <stop offset="1" stop-color="#b31d18"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="52" y="52" width="920" height="920" rx="216" fill="url(#bg)"/>
+
+  <!-- Bayam: a leaf on either side, planted in the database. -->
+  <g stroke="#062f22" stroke-width="10" stroke-linejoin="round">
+    <path d="M330 700 C 268 646, 208 574, 190 496 C 180 452, 186 410, 202 378 C 254 408, 302 452, 330 508 C 356 560, 348 644, 330 700 Z" fill="url(#leaf)"/>
+    <path d="M694 700 C 756 646, 816 574, 834 496 C 844 452, 838 410, 822 378 C 770 408, 722 452, 694 508 C 668 560, 676 644, 694 700 Z" fill="url(#leaf)"/>
+  </g>
+  <g stroke="#1a6b25" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.6">
+    <path d="M338 686 C 312 616, 274 546, 226 470"/>
+    <path d="M686 686 C 712 616, 750 546, 798 470"/>
+  </g>
+
+  <!-- The chicken behind the database rim. -->
+  <g stroke="#062f22" stroke-width="9" stroke-linejoin="round">
+    <ellipse cx="512" cy="530" rx="158" ry="150" fill="url(#body)"/>
+    <ellipse cx="376" cy="548" rx="52" ry="88" fill="url(#wing)" transform="rotate(-14 376 548)"/>
+    <ellipse cx="648" cy="548" rx="52" ry="88" fill="url(#wing)" transform="rotate(14 648 548)"/>
+    <circle cx="512" cy="332" r="102" fill="url(#body)"/>
+    <path d="M450 240 C 438 194, 468 168, 494 194 C 496 158, 532 150, 542 180 C 558 148, 594 160, 590 198 C 618 182, 644 208, 620 242 C 600 272, 560 260, 530 260 C 500 260, 464 272, 450 240 Z" fill="url(#comb)"/>
+  </g>
+  <circle cx="470" cy="330" r="17" fill="#12222b"/>
+  <circle cx="554" cy="330" r="17" fill="#12222b"/>
+  <path d="M484 380 C 484 360, 540 360, 540 380 L 512 416 Z" fill="#f7a72e" stroke="#062f22" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M512 420 C 497 420, 488 429, 488 440 C 488 455, 499 464, 512 464 C 525 464, 536 455, 536 440 C 536 429, 527 420, 512 420 Z" fill="#d83a30" stroke="#062f22" stroke-width="7"/>
+
+  <!-- The database. -->
+  <g>
+    <path d="M252 700 v158 a260 84 0 0 0 520 0 v-158 z" fill="url(#db)"/>
+    <path d="M258 764 a254 78 0 0 0 508 0" fill="none" stroke="#0a4a58" stroke-width="18" opacity="0.4"/>
+    <path d="M258 840 a254 78 0 0 0 508 0" fill="none" stroke="#0a4a58" stroke-width="18" opacity="0.4"/>
+    <ellipse cx="512" cy="700" rx="260" ry="84" fill="url(#dbTop)"/>
+    <ellipse cx="512" cy="700" rx="260" ry="84" fill="none" stroke="#0a4a58" stroke-width="18" opacity="0.4"/>
+  </g>
+</svg>

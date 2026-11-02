@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
 members = ["crates/*"]
-default-members = ["crates/dbiji-app"]
+default-members = ["crates/dbayam-app"]
 
 [workspace.package]
 version = "0.3.49"
@@ -9,29 +9,31 @@ edition = "2024"
 rust-version = "1.88"
 license = "MIT OR Apache-2.0"
 authors = ["Tommy Lumos Empire"]
-repository = "https://github.com/dbiji/dbiji"
-description = "DBiji - lightweight SQL database client written in Rust"
+repository = "https://github.com/rajebdev/dbayam"
+description = "DBayam - lightweight SQL database client written in Rust"
 
 [workspace.dependencies]
 # --- internal crates
-dbiji-core = { path = "crates/dbiji-core" }
-dbiji-sql = { path = "crates/dbiji-sql" }
-dbiji-driver-postgres = { path = "crates/dbiji-driver-postgres" }
-dbiji-driver-mysql = { path = "crates/dbiji-driver-mysql" }
-dbiji-driver-sqlite = { path = "crates/dbiji-driver-sqlite" }
-dbiji-driver-mssql = { path = "crates/dbiji-driver-mssql" }
-dbiji-driver-clickhouse = { path = "crates/dbiji-driver-clickhouse" }
-dbiji-driver-duckdb = { path = "crates/dbiji-driver-duckdb" }
-dbiji-net = { path = "crates/dbiji-net" }
-dbiji-config = { path = "crates/dbiji-config" }
-dbiji-transfer = { path = "crates/dbiji-transfer" }
-dbiji-compare = { path = "crates/dbiji-compare" }
-dbiji-tasks = { path = "crates/dbiji-tasks" }
-dbiji-ai = { path = "crates/dbiji-ai" }
-dbiji-grid = { path = "crates/dbiji-grid" }
-dbiji-icons = { path = "crates/dbiji-icons" }
-dbiji-editor = { path = "crates/dbiji-editor" }
-dbiji-visual = { path = "crates/dbiji-visual" }
+dbayam-core = { path = "crates/dbayam-core" }
+dbayam-sql = { path = "crates/dbayam-sql" }
+dbayam-driver-postgres = { path = "crates/dbayam-driver-postgres" }
+dbayam-driver-mysql = { path = "crates/dbayam-driver-mysql" }
+dbayam-driver-sqlite = { path = "crates/dbayam-driver-sqlite" }
+dbayam-driver-mssql = { path = "crates/dbayam-driver-mssql" }
+dbayam-driver-clickhouse = { path = "crates/dbayam-driver-clickhouse" }
+dbayam-driver-duckdb = { path = "crates/dbayam-driver-duckdb" }
+dbayam-driver-mongodb = { path = "crates/dbayam-driver-mongodb" }
+dbayam-driver-redis = { path = "crates/dbayam-driver-redis" }
+dbayam-net = { path = "crates/dbayam-net" }
+dbayam-config = { path = "crates/dbayam-config" }
+dbayam-transfer = { path = "crates/dbayam-transfer" }
+dbayam-compare = { path = "crates/dbayam-compare" }
+dbayam-tasks = { path = "crates/dbayam-tasks" }
+dbayam-ai = { path = "crates/dbayam-ai" }
+dbayam-grid = { path = "crates/dbayam-grid" }
+dbayam-icons = { path = "crates/dbayam-icons" }
+dbayam-editor = { path = "crates/dbayam-editor" }
+dbayam-visual = { path = "crates/dbayam-visual" }
 
 # --- async / runtime
 tokio = { version = "1.47", features = ["rt-multi-thread", "macros", "sync", "time", "net", "io-util", "fs", "process", "signal"] }
@@ -48,6 +50,8 @@ mysql_async = { version = "0.37", default-features = false, features = ["default
 rusqlite = { version = "0.40", features = ["bundled", "column_metadata", "backup", "functions", "hooks", "limits"] }
 tiberius = { version = "0.13", default-features = false, features = ["tds73", "chrono", "rustls", "sql-browser-tokio"] }
 duckdb = { version = "1.10506", features = ["bundled"] }
+mongodb = { version = "~3.8", default-features = false, features = ["compat-3-0-0", "dns-resolver", "rustls-tls-aws-lc"] }
+redis = { version = "1.8", default-features = false, features = ["tokio-comp", "tokio-rustls-comp", "aio"] }
 
 # --- TLS / network / crypto
 rustls = { version = "0.23", features = ["aws_lc_rs", "logging", "std", "tls12"] }
@@ -124,6 +128,17 @@ lto = "fat"
 codegen-units = 1
 strip = true
 panic = "unwind"
+
+# The MongoDB and Redis clients are large and rarely on the hot path: their
+# code is optimised for size, the rest of the binary for speed.
+[profile.release.package.mongodb]
+opt-level = "z"
+
+[profile.release.package.bson]
+opt-level = "z"
+
+[profile.release.package.redis]
+opt-level = "z"
 
 [profile.bench]
 inherits = "release"

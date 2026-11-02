@@ -1,7 +1,33 @@
 # Changelog
 
-All notable changes to DBiji. The newest version comes first; DBiji shows the
+All notable changes to DBayam. The newest version comes first; DBayam shows the
 notes of a new version once after it was updated (Help → What's new).
+
+## Unreleased
+
+### Added
+- MongoDB connections (`dbayam-driver-mongodb`, the official Rust driver). Statements are the shell language — `db.users.find({age: {$gt: 30}}).sort({age: -1}).limit(20)`, `db.orders.aggregate([…])`, `insertOne` / `updateMany` / `deleteMany` / `createIndex` / `drop`, `db.runCommand({…})`, `show collections`, `show databases`, `use shop` — split at `;` or a line break outside brackets, so chained calls and multi-line documents stay one statement. Documents are rows: one column per top-level field (the union over the first documents), nested values as JSON; `find` and `aggregate` stream. The navigator shows databases, collections, their indexes and the fields sampled from the documents; the DDL tab writes `db.createCollection(…)` and one `createIndex(…)` per index; explain shows the winning plan stages.
+- Redis connections (`dbayam-driver-redis`, RESP3). One command per line (`GET user:1`, `HGETALL session:9`, `SCAN 0 MATCH order:* COUNT 100`, `ZRANGE rank 0 -1 WITHSCORES`), replies shaped into tables (a map as `field`/`value`, a scan with its cursor, sorted sets with their scores). Databases are shown as schemas, a key as a table with its fields as columns; `View data` reads the key whatever its type (`DBAYAM.KEYDATA key`), the DDL tab writes the commands that recreate it. Session manager, server dashboard (clients, memory, keyspace, per-database key counts) and `CLIENT KILL` work; `INFO`, `CONFIG GET` and the other read commands are allowed on read-only connections.
+- `mongodb://`, `mongodb+srv://`, `redis://` and `rediss://` connection URLs (and `jdbc:` variants) are imported; DBeaver connections of MongoDB and Redis are recognised.
+- Shell templates in the editor: `find`, `aggr`, `insdoc`, `scan`, `hgetall` … The SQL templates are not offered for MongoDB and Redis, which have no SQL.
+- MongoDB and Redis logos, brand colours and the shell keywords (MongoDB methods and aggregation operators, Redis commands) for highlighting and autocomplete.
+
+### Fixed
+- A Redis connection could not be opened when its auto-commit was off (or its connection type's default was): DBayam asked for manual commit and failed with "Redis transactions (MULTI / EXEC) are written as commands, not toggled here". The Auto-commit choice is now hidden for drivers without transactions (Redis, MongoDB), such a connection opens in auto-commit — every command commits on its own — and the manual commit shortcut says so instead of doing nothing.
+- Reading a Redis key failed with "timed out" (the data editor showed it with "Context: Reading the key") whenever the read took longer than half a second: the Redis client's default response timeout of 500 ms was left on. It is off now, so a large `HGETALL` / `SMEMBERS` / `XRANGE`, or a server that was paused or busy, no longer fails; DBayam's own query timeout still bounds statements.
+- Redis connections that use only a password (the `default` user, no ACL user name) failed every command with `"NOAUTH": Authentication required.` when reading `INFO`: the password was dropped from the connection URL unless a user name was set. The URL is now `redis://:password@host`, and `NOAUTH` / `WRONGPASS` are reported as authentication failures instead of query errors.
+- MongoDB connections checked the user in `admin` even when the connection named a database, so a user created with `use shop; db.createUser(…)` — which defines it in `shop` only — was refused with `SCRAM failure: Authentication failed.` (code 18). The user is now checked in the connection's database, the MongoDB URI specification's `authSource` default (`defaultauthdb`), and `admin` is tried once if that is refused (a user created there: Atlas, the first `mongod` user); the `authSource` driver property still overrides both, and the script runner uses the same database rule for `mongosh`. An authentication failure now reads `SCRAM failure: Authentication failed.` with a hint naming the databases tried, instead of the driver's raw debug dump (`Kind: …, labels: {}, source: Some(Error { … })`).
+- MongoDB now works with 4.2 as well as 4.4–8.0. The driver is pinned to `mongodb` 3.8 (minimum MongoDB 4.2, maximum 8.0 — the same maximum as 3.9, which had raised the minimum to 4.4 for nothing this app uses). Verified against live 4.2.25, 4.4.29 and 7.0.14, plain and with authentication.
+- MongoDB connections failed against servers the driver does not accept, and against anything reached through a `mongodb+srv://` URI, with no useful message. The URI importer accepted `mongodb+srv://` but the driver was built without DNS resolution, so it dialled the seed name on port 27017. SRV resolution is back on, the URI now marks the connection (`srv`), and a version refusal reads "DBayam needs MongoDB 4.2 or newer; this server reports wire version 7 (MongoDB 4.0 or older)" instead of the driver's raw topology dump.
+- MongoDB `prefer` (the default) only ever tried plain TCP: MongoDB has no in-band TLS negotiation, so a server that requires TLS was unreachable. It now tries both modes — plain then TLS for a direct host, TLS then plain for an SRV seed list — within one connect timeout, and stops at a refused login or a version mismatch, which the other mode cannot fix.
+- A MongoDB connection that could not be opened reported "Server selection timeout: … labels: {…}, source: None". It now says "No server answered at host:port: I/O error: Connection refused", with the driver's dump kept as the detail.
+- Connecting to SQL Server 2008 and older failed with an opaque TLS error. `prefer` now retries without TLS after *any* failed handshake (a legacy server closes the socket after our TLS 1.2 hello, which arrived as a connection error and skipped the old fallback), and TLS failures name their cause and the way out: a legacy TLS version, or a rejected self-signed certificate (`require` mode or `trust_server_certificate`). TLS 1.0/1.1 itself stays unsupported: rustls offers 1.2 and 1.3 only, so such a server needs SSL `disable` (when it does not force encryption) or an upgrade.
+
+### Changed
+- Renamed from DBiji to **DBayam**: the binary is `dbayam`, crates are `dbayam-*`, per-user files live under `dev.dbayam.DBayam`, and the release repository is `rajebdev/dbayam`. Settings are not migrated: the app starts with a fresh profile (`$DBAYAM_HOME` / `--portable` still choose the root).
+- A new icon: a white database cylinder with a chicken standing behind it and a spinach leaf on either side, on a dark teal rounded square.
+- The release binary grows by about 7 MiB (37 → 44 MiB) for the MongoDB and Redis clients; the size budget is now 48 MB. Both driver crates are compiled with `opt-level = "z"`.
+- The SQL-only tools are hidden for MongoDB and Redis instead of failing: query builder, ER diagram, table designer, data search, import, count and column statistics, smart commit and the SQL templates. Their editor keeps its own splitter and classifier (`SqlSyntax::shell`), no `:name` substitution and no SQL formatter.
 
 ## 0.3.49 — 2026-10-31
 
@@ -9,18 +35,18 @@ notes of a new version once after it was updated (Help → What's new).
 - After the computer slept (or the network or the server dropped it), a connection stayed red in the navigator even once its tabs worked again with Retry: only unfolding it or Reconnect brought it back. It now connects again by itself — at once, then less and less often while the server does not answer, and at once when a tab's Retry got through — and turns green. A connection through an SSH tunnel or a proxy gets a new tunnel too. SQL editors sharing its session work again, and navigator folders that failed to load meanwhile load again.
 
 ### Changed
-- README: new screenshots (SQL editor, a table's data, ER diagram), current measurements, and the AI assistant's agent mode; the update check runs when DBiji starts and every 6 hours, not once a day as it said.
+- README: new screenshots (SQL editor, a table's data, ER diagram), current measurements, and the AI assistant's agent mode; the update check runs when DBayam starts and every 6 hours, not once a day as it said.
 - The app is about 115 KB smaller: the translations and release notes are stored compressed.
 
 ## 0.3.48 — 2026-10-30
 
 ### Added
-- DBiji for Windows and Linux. Every release now has, besides the macOS disk image:
-  - Windows 10 / 11 (x64): an installer (`DBiji-<version>-windows-x64-setup.exe`, per user, no administrator rights) and a portable `.zip`;
+- DBayam for Windows and Linux. Every release now has, besides the macOS disk image:
+  - Windows 10 / 11 (x64): an installer (`DBayam-<version>-windows-x64-setup.exe`, per user, no administrator rights) and a portable `.zip`;
   - Linux (x86_64 and ARM64): a `.deb` (Ubuntu, Debian, Linux Mint), an `.rpm` (Fedora, RHEL, openSUSE), an Arch Linux package, an AppImage and a `.tar.gz`.
   On Windows passwords are kept in the Credential Manager, on Linux in the desktop's keyring (Secret Service). The update dialog's Download gets the Windows installer; on Linux it opens the release page.
   Windows without OpenGL 2.0 (a virtual machine, Remote Desktop, no graphics driver) draws the window with Direct3D 12 instead.
-- When the window cannot open at all, DBiji says why in a dialog instead of quitting silently.
+- When the window cannot open at all, DBayam says why in a dialog instead of quitting silently.
 
 ## 0.3.47 — 2026-10-30
 
@@ -39,7 +65,7 @@ notes of a new version once after it was updated (Help → What's new).
 - The record view edits like the grid: typing on a field starts editing it with what is typed, Enter / F2 edit its value, ↑ ↓ go to the field above / below, and after Enter the keyboard goes on in the record.
 
 ### Fixed
-- Copying several cells (⌘C, in the grid and the record view) wrapped values with quotes, tabs or line breaks in quotes and doubled the quotes inside (`"{""a"":1}"`). Values are copied as they are, as in DBeaver; pasted back into DBiji they are the same cells. Advanced copy keeps its quoting options for spreadsheets.
+- Copying several cells (⌘C, in the grid and the record view) wrapped values with quotes, tabs or line breaks in quotes and doubled the quotes inside (`"{""a"":1}"`). Values are copied as they are, as in DBeaver; pasted back into DBayam they are the same cells. Advanced copy keeps its quoting options for spreadsheets.
 - In the record view, a value typed over a field and confirmed at once was not saved when the edit was started from the keyboard or the menu.
 - In the record view, ↑ / ↓ right after an edit could move the keyboard to the toolbar's ORDER BY field.
 
@@ -51,7 +77,7 @@ notes of a new version once after it was updated (Help → What's new).
 ## 0.3.44 — 2026-10-27
 
 ### Added
-- A database's menu in the navigator is complete: Edit database…, Rename… (F2), Maintenance, Copy name, Refresh and Drop… (⌘⌫). Edit database shows what the server tells (owner, encoding, collation, character type, tablespace, connection limit, allow connections, template, comment, size), changes what the database type allows (PostgreSQL: name, owner, tablespace, limits, template, comment; CockroachDB: name, owner, comment; MySQL / MariaDB: character set, collation; SQL Server: name, owner, collation; ClickHouse: name) and shows the statements first. PostgreSQL renames a database only while nobody uses it: DBiji closes its own session on it first and can disconnect the others.
+- A database's menu in the navigator is complete: Edit database…, Rename… (F2), Maintenance, Copy name, Refresh and Drop… (⌘⌫). Edit database shows what the server tells (owner, encoding, collation, character type, tablespace, connection limit, allow connections, template, comment, size), changes what the database type allows (PostgreSQL: name, owner, tablespace, limits, template, comment; CockroachDB: name, owner, comment; MySQL / MariaDB: character set, collation; SQL Server: name, owner, collation; ClickHouse: name) and shows the statements first. PostgreSQL renames a database only while nobody uses it: DBayam closes its own session on it first and can disconnect the others.
 - SQL functions in typed cells: `now()`, `CURRENT_TIMESTAMP`, `now() - interval '1 day'`, `gen_random_uuid()` … typed in a timestamp, date, number or uuid column are written into the UPDATE / INSERT as typed (marked SQL in the grid) and evaluated by the database. Text columns keep the text.
 - Autocomplete offers PostgreSQL partitions (after their table, "partition of …"), with their table's columns.
 
@@ -161,7 +187,7 @@ notes of a new version once after it was updated (Help → What's new).
 ## 0.3.28 — 2026-10-22
 
 ### Fixed
-- MySQL 5.7: connecting failed with "TLS error: HandshakeFailure" in the default SSL mode (Prefer). MySQL 5.7 offers only DHE ciphers, which DBiji's TLS library does not support; Prefer now goes on without TLS, as the mysql client does, and Require explains why it fails.
+- MySQL 5.7: connecting failed with "TLS error: HandshakeFailure" in the default SSL mode (Prefer). MySQL 5.7 offers only DHE ciphers, which DBayam's TLS library does not support; Prefer now goes on without TLS, as the mysql client does, and Require explains why it fails.
 
 ### Added
 - "Statistics of the whole column" in a column's menu: rows, NULLs, distinct values, the smallest and the largest over all rows of the query, computed by the server (the header's tooltip covers the fetched rows).
@@ -230,12 +256,12 @@ notes of a new version once after it was updated (Help → What's new).
 - Columns fit their header and their first values when a result opens, as in DBeaver (timestamps and e-mail addresses are no longer cut, short columns take less room); widths you set yourself are kept.
 - Column headers show a small icon of the column's type (number, text, date, JSON …); hovering a header shows its database type.
 - Result toolbar: Refresh has a label, Save and Cancel form a group of their own next to it with their labels, and the status shows when the rows were fetched; after a refresh it shows the new run's time.
-- The window title names the active tab ("DBiji - orders"), so DBiji windows can be told apart in ⌘-Tab and Mission Control.
+- The window title names the active tab ("DBayam - orders"), so DBayam windows can be told apart in ⌘-Tab and Mission Control.
 
 ## 0.3.20 — 2026-10-22
 
 ### Fixed
-- A date or time format that does not fit the value (`%H` in the date format, `%z` in the timestamp format) made DBiji crash every time a table was opened; such formats now fall back to the standard ones.
+- A date or time format that does not fit the value (`%H` in the date format, `%z` in the timestamp format) made DBayam crash every time a table was opened; such formats now fall back to the standard ones.
 - An open cell editor wrote into another row when the filter was cleared or the data refreshed while typing; it now stays with its row, and auto-refresh waits while a cell is being edited.
 - `WITH … (…)` or `INSERT INTO t (a, b)` followed by a blank line was split into two statements, so the wrong statement could run.
 - SQL Server: `UPDATE` or `DELETE` without WHERE ran without the confirmation when another statement followed on the next line.
@@ -245,7 +271,7 @@ notes of a new version once after it was updated (Help → What's new).
 - Copying a value and a NULL and pasting them lost the NULL row; a block pasted onto a selected range starts at its top left; copies with gaps (⌘-click) are refused instead of pasting empty values.
 - A header sort clicked while a filter was still being computed dropped the filter; the Record, Text, JSON and XML views now show filtered rows too.
 - Grouping merged different integers above 2^53; Calc no longer reports "only the first cells were analysed" for overlapping selections.
-- Scheduled tasks also registered with the system scheduler ran twice while DBiji was open.
+- Scheduled tasks also registered with the system scheduler ran twice while DBayam was open.
 - Migrations: MySQL TIMESTAMP values into PostgreSQL timestamptz were shifted by the time zone difference; text primary keys into MySQL or SQL Server failed (they get varchar(255) / nvarchar(450)); MySQL BIT and geometry values were written as strings; ids into a PostgreSQL GENERATED ALWAYS identity were refused.
 - ClickHouse: imports, migrations and mock data failed at the start ("does not support transactions"); binary String values (`unhex`, digests) are kept as bytes instead of being garbled.
 - SQL Server: NULL into varbinary or image columns was refused; rows with a `datetime` key were often "not found" when saved.
@@ -257,9 +283,9 @@ notes of a new version once after it was updated (Help → What's new).
 ## 0.3.19 — 2026-10-21
 
 ### Fixed
-- Shift+click in the Calc table could crash DBiji after the selected cells changed.
+- Shift+click in the Calc table could crash DBayam after the selected cells changed.
 - Saving grid edits failed for no reason on SQL Server with SET NOCOUNT ON or a trigger ("the row was not found", "would change 2 rows"), and on MySQL when a value was saved unchanged: the row count check now applies only where the count can be trusted.
-- One-column CSV files lost a NULL in their last row (DBiji's own export writes NULL as an empty line).
+- One-column CSV files lost a NULL in their last row (DBayam's own export writes NULL as an empty line).
 - A JSON file holding one object with an array of objects (`{"id": 1, "orders": [...]}`) was read as a wrapper of those objects; only keys such as items, data, results or records are taken as a wrapper now.
 - MySQL before 8.0.19 and MariaDB: times with a time zone before 1970 or after 2038 were not converted to the session's zone.
 - Migrations to DuckDB no longer draw the sequence for hours when ids are huge; above a million draws a message says how to set it.
@@ -306,12 +332,12 @@ notes of a new version once after it was updated (Help → What's new).
 ## 0.3.14 — 2026-10-21
 
 ### Changed
-- A smaller app: egui's Ubuntu font, which DBiji does not use, is no longer bundled (about 360 KB). The few symbols the code font lacks are drawn with Inter, like the rest of the UI.
+- A smaller app: egui's Ubuntu font, which DBayam does not use, is no longer bundled (about 360 KB). The few symbols the code font lacks are drawn with Inter, like the rest of the UI.
 
 ## 0.3.13 — 2026-10-21
 
 ### Fixed
-- The connection's dot turns red when the connection is lost: also when the server closed it while DBiji was idle (idle timeout, restart), and when a data tab or SQL editor found its own session closed (the connection is checked then). Double-click a red connection to reconnect.
+- The connection's dot turns red when the connection is lost: also when the server closed it while DBayam was idle (idle timeout, restart), and when a data tab or SQL editor found its own session closed (the connection is checked then). Double-click a red connection to reconnect.
 - A data tab or SQL editor result whose session was lost saves and loads through a new session instead of failing with "connection closed" until the tab is opened again; a session of another database is opened again too.
 - New rows show the values the database gave them right after **Save**: a generated id (serial, identity, auto increment) and column defaults (they stayed NULL until a refresh). PostgreSQL, SQLite, DuckDB and MariaDB return the row (`RETURNING`); MySQL and SQL Server read it back by its key.
 - Security: certificate checks of TLS connections no longer accept distrusted intermediate certificates (rustls-webpki 0.103.16, webpki-roots 1.0.10).
@@ -322,7 +348,7 @@ notes of a new version once after it was updated (Help → What's new).
 - Scrolling a result after saving no longer skips rows; a result whose columns changed (ALTER, another statement) is editable again with its new columns; cancelled fetches leave the operations list; a server-side filter or sort of a query ending in a `-- comment` works.
 - An open cursor not read for 5 minutes is closed (it held a snapshot and table locks: an ALTER of the table waited).
 - Database nodes: New SQL editor, New schema, Backup / Restore and Query builder use that database instead of the default one; Refresh of a database reloads only it; the navigator shows tables created or dropped by a script in any schema; revealing an object picks the one of the right database.
-- Connections that failed to connect stay red; two connection dialogs no longer share one window; applying a URL keeps SSH, colour, filters and the other settings; the update installer starts only once DBiji really quits.
+- Connections that failed to connect stay red; two connection dialogs no longer share one window; applying a URL keeps SSH, colour, filters and the other settings; the update installer starts only once DBayam really quits.
 - MySQL: dropping a partition runs `ALTER TABLE … DROP PARTITION` (it ran `DROP TABLE` with the partition's name) and its data opens as `t PARTITION (p)`; moving the primary key to a new column while dropping the old one works; imports split very wide VARCHAR tables (row size limit) by turning the longest columns into TEXT.
 - SQL Server: an ALTER that would silently lose another table's foreign key (key removed or retyped) is refused before anything runs; queries with `OPTION (…)` / `FOR XML` are no longer wrapped into invalid SQL.
 - ClickHouse: extending the sorting key adds its new columns in the same ALTER (ClickHouse requires it), and an unsupported key change fails before the other changes are applied.
@@ -370,7 +396,7 @@ notes of a new version once after it was updated (Help → What's new).
 - **Data transfer**: migrations into SQL Server identity columns failed and PostgreSQL sequences stayed behind the copied ids (SQL Server identity columns work for imports and data compare scripts too); JSON Lines whose first record holds an array imported nothing; two tables migrated into one target table are refused; a parallel export reported "cancelled" instead of the error that stopped it; rows written in replace mode were overcounted; XLSX: blank rows above the data, and a warning for cells right of the columns found.
 - **Schema compare**: foreign keys of a dropped table on a key that changes are dropped first; Apply re-ticked the excluded objects.
 - **Drivers**: PostgreSQL collations like `"en_US.utf8"`, `REINDEX SCHEMA` in manual commit mode, the `sslmode` property for the client tools. MySQL: a new primary key on a column added in the same change, `RANGE COLUMNS … MAXVALUE`, metadata search under `NO_BACKSLASH_ESCAPES`, table statistics and internal queries with a non-UTF-8 connection character set, client tools through an SSH tunnel with Verify full. SQL Server: Count rows and paging of `WITH` queries, key changes of a table other tables reference, error positions after `GO`. ClickHouse: `USE` after a comment containing "use", the engine of a materialized view without `TO`, sorting key changes that ClickHouse cannot make fail instead of doing nothing. DuckDB: the sequence of a renamed table or column, `TIME '24:00:00'`, Checkpoint of a schema, TIME_NS results (an error instead of a closed connection). SQLite: Cancel of a statement waiting to start. A SQL Server or ClickHouse session could hang when an old result was dropped late.
-- **Other**: Reset all settings did nothing; Terminate session could hit another session after an auto-refresh; a backup or maintenance closed while running stayed "Running"; Show rows of a data search used the connection chosen afterwards; Save as task saved twice on a double-click; closing a SQL editor on another database closed the session the navigator and other tabs share there. Tasks: SQL tasks with a database on PostgreSQL always failed, an import with a repeated id, Windows task ids, runs of a live `--run-task` marked interrupted. A password saved by another DBiji process could be lost; the connection dialog deleted a saved password it could not read (locked vault); double-quoted passwords stayed in the history; SQL Server JDBC URLs with `{…}` values; a before-connect command that starts a background helper timed out; external formatter output over 64 KB; the last lines of a client tool's error; `~` for paths next to the home folder; renaming a script by case only (macOS).
+- **Other**: Reset all settings did nothing; Terminate session could hit another session after an auto-refresh; a backup or maintenance closed while running stayed "Running"; Show rows of a data search used the connection chosen afterwards; Save as task saved twice on a double-click; closing a SQL editor on another database closed the session the navigator and other tabs share there. Tasks: SQL tasks with a database on PostgreSQL always failed, an import with a repeated id, Windows task ids, runs of a live `--run-task` marked interrupted. A password saved by another DBayam process could be lost; the connection dialog deleted a saved password it could not read (locked vault); double-quoted passwords stayed in the history; SQL Server JDBC URLs with `{…}` values; a before-connect command that starts a background helper timed out; external formatter output over 64 KB; the last lines of a client tool's error; `~` for paths next to the home folder; renaming a script by case only (macOS).
 
 ## 0.3.11 — 2026-10-20
 
@@ -421,7 +447,7 @@ notes of a new version once after it was updated (Help → What's new).
 
 ### Fixed
 - SQL editor: an editor opened on a database in the navigator (PostgreSQL) suggested only keywords after FROM — its schema snapshot had no schema; it now uses the database's current schema (partitioned tables included, partitions not), reads another database of the server through its own session, and no longer mixes in tables of other databases. The schema button shows the schema in use.
-- macOS: a crash on MacBooks with a Touch Bar (an AppKit exception in the Touch Bar's responder tracking); DBiji now keeps the Touch Bar machinery away (it has no Touch Bar items).
+- macOS: a crash on MacBooks with a Touch Bar (an AppKit exception in the Touch Bar's responder tracking); DBayam now keeps the Touch Bar machinery away (it has no Touch Bar items).
 
 ## 0.3.4 — 2026-10-20
 
@@ -458,8 +484,8 @@ notes of a new version once after it was updated (Help → What's new).
 ## 0.3.1 — 2026-10-20
 
 ### New
-- macOS application menu like other Mac apps: About DBiji, **Check for Updates…**, Settings… (⌘,), Services, Hide DBiji / Hide Others / Show All, Quit DBiji (⌘Q, asks about unsaved scripts first).
-- One-line installer: `curl -fsSL https://raw.githubusercontent.com/ilhamnadhif/dbiji/master/scripts/install.sh | bash` installs or updates DBiji in /Applications without the Gatekeeper prompt.
+- macOS application menu like other Mac apps: About DBayam, **Check for Updates…**, Settings… (⌘,), Services, Hide DBayam / Hide Others / Show All, Quit DBayam (⌘Q, asks about unsaved scripts first).
+- One-line installer: `curl -fsSL https://raw.githubusercontent.com/rajebdev/dbayam/master/scripts/install.sh | bash` installs or updates DBayam in /Applications without the Gatekeeper prompt.
 
 ## 0.3.0 — 2026-10-20
 
@@ -470,7 +496,7 @@ notes of a new version once after it was updated (Help → What's new).
 - SQL editor: code folding, mark occurrences, open declaration (⌘ click / F3), next / previous statement, copy the statement, count its rows, evaluate an expression, morph to a delimited list, trim trailing spaces, search on the web, save / load execution plans, formatter choices (compact, external command, current statement only).
 - Data editor: add a row before the current one, copy a value from the row above / below, generate UUIDs, fit columns, hide empty columns, move columns, zoom, highlight rows by value, save the filter and order as the table default.
 - Database tools: PostgreSQL backup of all databases or only roles and tablespaces (pg_dumpall), enable / disable triggers, a foreign data wrapper configurator, InnoDB memory and key cache charts in the MySQL dashboard.
-- Software update (macOS): with automatic checks on, DBiji looks for a new release at every start and every 6 hours; a new version shows its notes and installs in place (download, signature check, quit, swap, reopen — an administrator password only when needed), or lights up an Update button in the toolbar. Help → Check for updates… does the same on demand.
+- Software update (macOS): with automatic checks on, DBayam looks for a new release at every start and every 6 hours; a new version shows its notes and installs in place (download, signature check, quit, swap, reopen — an administrator password only when needed), or lights up an Update button in the toolbar. Help → Check for updates… does the same on demand.
 - Pending transactions (Database menu): every connection with uncommitted changes, commit or roll back one or all; quitting with open transactions asks first.
 - Help → Error log, Tip of the day, Collect diagnostic info (a zip without passwords, host names or other connection details); Settings → Reset all settings.
 - Clearer text and calmer colours: the Inter typeface, near-black (light) / near-white (dark) text instead of thin grey text, new light and dark themes.
@@ -485,7 +511,7 @@ notes of a new version once after it was updated (Help → What's new).
 - Tab in the result grid shows the selected row as a record (column → value, long values wrapped) like DBeaver; Tab goes back, ← / → show the previous / next row.
 - New schema… is on database and schema nodes (a schema belongs to a database), not on the connection of servers with several databases; the start page lists recent connections on two lines (name, then the address).
 - Production connections ask before statements that change data or schema only; SELECT, EXPLAIN and sorting or filtering a table run without a question (dangerous statements still always ask).
-- macOS Keychain: all DBiji passwords are kept in one Keychain entry, read once per launch, so the Keychain asks at most once (not once per password and connection); existing entries move into it automatically.
+- macOS Keychain: all DBayam passwords are kept in one Keychain entry, read once per launch, so the Keychain asks at most once (not once per password and connection); existing entries move into it automatically.
 - Fixed: the Create button of New database… could not be clicked (the dialog grew every frame); New database… is also on database nodes, and the new database appears in the navigator ("Show all databases" is turned on when only the connection's database was listed).
 - New database… and New schema… (connection menu, database menu, Database menu, command palette): name, owner / encoding / template (PostgreSQL) or character set / collation (MySQL, MariaDB, SQL Server), the statement shown before it runs.
 - Main toolbar buttons that cannot work in the current tab are greyed out and say why (e.g. Run needs a SQL editor, Commit needs manual commit).
