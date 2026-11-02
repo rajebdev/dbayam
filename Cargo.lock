@@ -1618,11 +1618,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be1e0bca6c3637f992fc1cc7cbc52a78c1ef6db076dbf1059c4323d6a2048376"
 
 [[package]]
-name = "dbiji-ai"
+name = "dbayam-ai"
 version = "0.3.49"
 dependencies = [
  "async-trait",
- "dbiji-core",
+ "dbayam-core",
  "parking_lot",
  "rustls",
  "serde",
@@ -1634,31 +1634,31 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-app"
+name = "dbayam-app"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "chrono",
- "dbiji-ai",
- "dbiji-compare",
- "dbiji-config",
- "dbiji-core",
- "dbiji-driver-clickhouse",
- "dbiji-driver-duckdb",
- "dbiji-driver-mongodb",
- "dbiji-driver-mssql",
- "dbiji-driver-mysql",
- "dbiji-driver-postgres",
- "dbiji-driver-redis",
- "dbiji-driver-sqlite",
- "dbiji-editor",
- "dbiji-grid",
- "dbiji-icons",
- "dbiji-net",
- "dbiji-sql",
- "dbiji-tasks",
- "dbiji-transfer",
- "dbiji-visual",
+ "dbayam-ai",
+ "dbayam-compare",
+ "dbayam-config",
+ "dbayam-core",
+ "dbayam-driver-clickhouse",
+ "dbayam-driver-duckdb",
+ "dbayam-driver-mongodb",
+ "dbayam-driver-mssql",
+ "dbayam-driver-mysql",
+ "dbayam-driver-postgres",
+ "dbayam-driver-redis",
+ "dbayam-driver-sqlite",
+ "dbayam-editor",
+ "dbayam-grid",
+ "dbayam-icons",
+ "dbayam-net",
+ "dbayam-sql",
+ "dbayam-tasks",
+ "dbayam-transfer",
+ "dbayam-visual",
  "eframe",
  "egui",
  "egui-phosphor",
@@ -1697,12 +1697,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-compare"
+name = "dbayam-compare"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "quick-xml 0.42.0",
  "serde",
  "serde_json",
@@ -1713,7 +1713,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-config"
+name = "dbayam-config"
 version = "0.3.49"
 dependencies = [
  "aes",
@@ -1721,7 +1721,7 @@ dependencies = [
  "cbc",
  "chacha20poly1305",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "directories",
  "hex",
  "keyring",
@@ -1739,7 +1739,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-core"
+name = "dbayam-core"
 version = "0.3.49"
 dependencies = [
  "async-trait",
@@ -1760,13 +1760,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-driver-clickhouse"
+name = "dbayam-driver-clickhouse"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "base64 0.23.1",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "hex",
  "rustls",
  "rustls-native-certs",
@@ -1779,12 +1779,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-driver-duckdb"
+name = "dbayam-driver-duckdb"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "duckdb",
  "serde_json",
  "tempfile",
@@ -1794,12 +1794,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-driver-mongodb"
+name = "dbayam-driver-mongodb"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "futures",
  "mongodb",
  "serde_json",
@@ -1809,12 +1809,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-driver-mssql"
+name = "dbayam-driver-mssql"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "futures",
  "hex",
  "quick-xml 0.42.0",
@@ -1826,12 +1826,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-driver-mysql"
+name = "dbayam-driver-mysql"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "encoding_rs",
  "mysql_async",
  "parking_lot",
@@ -1844,13 +1844,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-driver-postgres"
+name = "dbayam-driver-postgres"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "bytes",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "futures",
  "hex",
  "parking_lot",
@@ -1873,12 +1873,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-driver-redis"
+name = "dbayam-driver-redis"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "redis",
  "serde_json",
  "tokio",
@@ -1886,12 +1886,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-driver-sqlite"
+name = "dbayam-driver-sqlite"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "hex",
  "rusqlite",
  "serde",
@@ -1903,10 +1903,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-editor"
+name = "dbayam-editor"
 version = "0.3.49"
 dependencies = [
- "dbiji-core",
+ "dbayam-core",
  "eframe",
  "egui",
  "egui-phosphor",
@@ -1918,12 +1918,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-grid"
+name = "dbayam-grid"
 version = "0.3.49"
 dependencies = [
  "chrono",
- "dbiji-core",
- "dbiji-icons",
+ "dbayam-core",
+ "dbayam-icons",
  "eframe",
  "egui",
  "egui-phosphor",
@@ -1938,7 +1938,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-icons"
+name = "dbayam-icons"
 version = "0.3.49"
 dependencies = [
  "egui",
@@ -1946,11 +1946,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-net"
+name = "dbayam-net"
 version = "0.3.49"
 dependencies = [
  "base64 0.23.1",
- "dbiji-core",
+ "dbayam-core",
  "directories",
  "futures",
  "hmac",
@@ -1966,10 +1966,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-sql"
+name = "dbayam-sql"
 version = "0.3.49"
 dependencies = [
- "dbiji-core",
+ "dbayam-core",
  "flate2",
  "serde",
  "serde_json",
@@ -1978,13 +1978,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-tasks"
+name = "dbayam-tasks"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "chrono",
  "cron",
- "dbiji-core",
+ "dbayam-core",
  "libc",
  "parking_lot",
  "serde",
@@ -1997,14 +1997,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-transfer"
+name = "dbayam-transfer"
 version = "0.3.49"
 dependencies = [
  "async-trait",
  "base64 0.23.1",
  "calamine",
  "chrono",
- "dbiji-core",
+ "dbayam-core",
  "encoding_rs",
  "hex",
  "parking_lot",
@@ -2023,12 +2023,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbiji-visual"
+name = "dbayam-visual"
 version = "0.3.49"
 dependencies = [
  "chrono",
- "dbiji-core",
- "dbiji-icons",
+ "dbayam-core",
+ "dbayam-icons",
  "eframe",
  "egui",
  "egui-phosphor",

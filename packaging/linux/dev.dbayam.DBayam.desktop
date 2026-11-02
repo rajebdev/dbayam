@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=DBayam
+GenericName=SQL Database Client
+Comment=A lightweight SQL database client
+Exec=dbayam %F
+Icon=dev.dbayam.DBayam
+Terminal=false
+Categories=Development;Database;
+Keywords=sql;database;postgresql;mysql;sqlite;sqlserver;clickhouse;
+MimeType=application/sql;application/x-sqlite3;application/vnd.sqlite3;
+StartupWMClass=dev.dbayam.DBayam
+StartupNotify=true

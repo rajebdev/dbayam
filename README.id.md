@@ -1,14 +1,20 @@
-# DBiji
+# DBayam
 
 **Klien database SQL yang ringan, ditulis sepenuhnya dengan Rust.**
 
-DBiji adalah alternatif native untuk DBeaver pada database SQL di macOS, Windows, dan Linux: satu
+DBayam adalah alternatif native untuk DBeaver pada database SQL di macOS, Windows, dan Linux: satu
 biner kecil, tanpa JVM, tanpa Electron. Terbuka dalam sekitar 0,1 detik, CPU 0 % saat diam, memakai sekitar 90 MB memori — dan
 hasil query jutaan baris tidak perlu muat di memori.
 
+> **Fork.** DBayam adalah fork dan kelanjutan yang diperbaiki dari
+> [DBiji](https://github.com/ilhamnadhif/dbiji) karya Ilham Nadhif, yang di-rename oleh proyek ini. Fork-nya
+> ada di [rajebdev/dbayam](https://github.com/rajebdev/dbayam); lisensi dan hak cipta asli (MIT / Apache-2.0)
+> tetap dipertahankan, ditambah perbaikan, driver, dan fitur sendiri (lihat [changelog](CHANGELOG.md)).
+> Proyek upstream tidak berafiliasi dengan, dan tidak mengesahkan, fork ini.
+
 [English](README.md)
 
-![DBiji dengan tema gelap dan bahasa Indonesia](docs/screenshots/editor-dark-id.png)
+![DBayam dengan tema gelap dan bahasa Indonesia](docs/screenshots/editor-dark-id.png)
 
 ## Sorotan
 
@@ -45,56 +51,56 @@ hasil query jutaan baris tidak perlu muat di memori.
 
 ## Instalasi
 
-Setiap [rilis](https://github.com/ilhamnadhif/dbiji/releases/latest) dibuat untuk macOS, Windows, dan
+Setiap [rilis](https://github.com/rajebdev/dbayam/releases/latest) dibuat untuk macOS, Windows, dan
 Linux:
 
 | Sistem | Unduhan |
 | --- | --- |
-| macOS 12 atau lebih baru (Apple Silicon, Intel) | `DBiji-<versi>.dmg`, atau [installer satu baris](#macos) / [Homebrew](#homebrew) |
-| Windows 10 / 11 (x64) | `DBiji-<versi>-windows-x64-setup.exe` (installer) atau `-windows-x64.zip` (portable) |
-| Ubuntu 22.04+, Debian 12+, Linux Mint, Pop!_OS | `DBiji-<versi>-linux-amd64.deb` (`arm64` untuk ARM) |
-| Fedora, RHEL / Rocky / Alma 9+, openSUSE | `DBiji-<versi>-linux-x86_64.rpm` (`aarch64` untuk ARM) |
-| Arch Linux, Manjaro, EndeavourOS | `DBiji-<versi>-linux-x86_64.pkg.tar.zst` (`aarch64` untuk ARM) |
-| Linux lainnya | `DBiji-<versi>-linux-x86_64.AppImage` atau `.tar.gz` (`aarch64` untuk ARM) |
+| macOS 12 atau lebih baru (Apple Silicon, Intel) | `DBayam-<versi>.dmg`, atau [installer satu baris](#macos) / [Homebrew](#homebrew) |
+| Windows 10 / 11 (x64) | `DBayam-<versi>-windows-x64-setup.exe` (installer) atau `-windows-x64.zip` (portable) |
+| Ubuntu 22.04+, Debian 12+, Linux Mint, Pop!_OS | `DBayam-<versi>-linux-amd64.deb` (`arm64` untuk ARM) |
+| Fedora, RHEL / Rocky / Alma 9+, openSUSE | `DBayam-<versi>-linux-x86_64.rpm` (`aarch64` untuk ARM) |
+| Arch Linux, Manjaro, EndeavourOS | `DBayam-<versi>-linux-x86_64.pkg.tar.zst` (`aarch64` untuk ARM) |
+| Linux lainnya | `DBayam-<versi>-linux-x86_64.AppImage` atau `.tar.gz` (`aarch64` untuk ARM) |
 
 ### macOS
 
 **Installer satu baris** (disarankan):
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/ilhamnadhif/dbiji/master/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rajebdev/dbayam/master/scripts/install.sh | bash
 ```
 
 Script ini mengunduh rilis terbaru, memeriksanya (SHA-256 yang diterbitkan GitHub, tanda tangan kode,
-bundle id dan versi), memasang `DBiji.app` ke `/Applications`, lalu membukanya. Jalankan lagi untuk
+bundle id dan versi), memasang `DBayam.app` ke `/Applications`, lalu membukanya. Jalankan lagi untuk
 memperbarui. Untuk memasang versi tertentu, berikan versinya: `… | bash -s -- v0.3.0`.
 
-**Disk image**: unduh **`DBiji-<versi>.dmg`**, buka, lalu seret **DBiji** ke **Applications**.
+**Disk image**: unduh **`DBayam-<versi>.dmg`**, buka, lalu seret **DBayam** ke **Applications**.
 
-> **“DBiji” tidak bisa dibuka / “Apple could not verify…”?** Build rilis belum dinotarisasi Apple,
+> **“DBayam” tidak bisa dibuka / “Apple could not verify…”?** Build rilis belum dinotarisasi Apple,
 > jadi macOS memblokir aplikasi yang diunduh lewat browser. Pilih salah satu:
 >
 > - **Pakai installer satu baris** di atas. File yang diunduh dengan `curl` tidak diblokir.
 > - **Izinkan sekali di Settings**: klik **Done** pada peringatan, buka **System Settings → Privacy &
->   Security**, lalu klik **Open Anyway** di samping “DBiji was blocked…”.
-> - **Lewat Terminal**: `xattr -dr com.apple.quarantine /Applications/DBiji.app`
+>   Security**, lalu klik **Open Anyway** di samping “DBayam was blocked…”.
+> - **Lewat Terminal**: `xattr -dr com.apple.quarantine /Applications/DBayam.app`
 
 ### Homebrew
 
 Dari clone repositori ini (cask-nya mengikuti setiap rilis):
 
 ```sh
-brew install --cask ./packaging/homebrew/dbiji.rb
+brew install --cask ./packaging/homebrew/dbayam.rb
 ```
 
 ### Windows
 
-Jalankan **`DBiji-<versi>-windows-x64-setup.exe`**. Installer memasang DBiji untuk user Anda (tanpa
+Jalankan **`DBayam-<versi>-windows-x64-setup.exe`**. Installer memasang DBayam untuk user Anda (tanpa
 hak administrator; pilih “all users” di dialog pertamanya untuk memasang bagi semua user),
 menambahkannya ke Start menu, dan bisa dihapus di **Settings → Apps**. Untuk memperbarui, jalankan
 installer versi baru.
 
-Untuk salinan **portable**, ekstrak `DBiji-<versi>-windows-x64.zip` lalu jalankan `dbiji.exe`
+Untuk salinan **portable**, ekstrak `DBayam-<versi>-windows-x64.zip` lalu jalankan `dbayam.exe`
 (dengan `--portable <FOLDER>` agar pengaturan dan datanya disimpan di folder itu).
 
 > **“Windows protected your PC”?** Build belum ditandatangani (code-signed), jadi SmartScreen
@@ -106,32 +112,32 @@ Unduh paket untuk distro Anda lalu pasang:
 
 ```sh
 # Ubuntu, Debian, Linux Mint, Pop!_OS
-sudo apt install ./DBiji-<versi>-linux-amd64.deb
+sudo apt install ./DBayam-<versi>-linux-amd64.deb
 # Fedora, RHEL / Rocky / Alma
-sudo dnf install ./DBiji-<versi>-linux-x86_64.rpm
+sudo dnf install ./DBayam-<versi>-linux-x86_64.rpm
 # openSUSE
-sudo zypper install --allow-unsigned-rpm ./DBiji-<versi>-linux-x86_64.rpm
+sudo zypper install --allow-unsigned-rpm ./DBayam-<versi>-linux-x86_64.rpm
 # Arch Linux, Manjaro, EndeavourOS
-sudo pacman -U ./DBiji-<versi>-linux-x86_64.pkg.tar.zst
+sudo pacman -U ./DBayam-<versi>-linux-x86_64.pkg.tar.zst
 ```
 
-Di distro lain, pakai **AppImage** (`chmod +x DBiji-*.AppImage`, lalu jalankan) atau ekstrak
+Di distro lain, pakai **AppImage** (`chmod +x DBayam-*.AppImage`, lalu jalankan) atau ekstrak
 **tar.gz** ke `~/.local` (programnya, entri menu, dan ikonnya):
-`tar -xzf DBiji-<versi>-linux-x86_64.tar.gz -C ~/.local --strip-components=1`.
+`tar -xzf DBayam-<versi>-linux-x86_64.tar.gz -C ~/.local --strip-components=1`.
 
-Setelah itu DBiji ada di menu aplikasi (atau jalankan `dbiji`). Dibutuhkan glibc 2.34 atau lebih baru
+Setelah itu DBayam ada di menu aplikasi (atau jalankan `dbayam`). Dibutuhkan glibc 2.34 atau lebih baru
 (Ubuntu 22.04, Debian 12, Fedora 35, RHEL 9 dan yang lebih baru), X11 atau Wayland dengan OpenGL.
 Kata sandi disimpan di keyring desktop lewat Secret Service (GNOME Keyring, KWallet) dan dialog file
-memakai XDG desktop portal — GNOME, KDE, dan kebanyakan desktop punya keduanya; tanpa keyring, DBiji
+memakai XDG desktop portal — GNOME, KDE, dan kebanyakan desktop punya keduanya; tanpa keyring, DBayam
 menyimpan kata sandi di brankasnya dengan kata sandi master. Untuk memperbarui, pasang paket versi
 baru.
 
 ### Dari source
 
 ```sh
-cargo build --release -p dbiji-app                     # target/release/dbiji (dbiji.exe)
-cargo build --release -p dbiji-app --features duckdb   # dengan engine DuckDB tertanam
-scripts/bundle-macos.sh                                # macOS: dist/DBiji.app, DBiji-<versi>.dmg dan .zip
+cargo build --release -p dbayam-app                     # target/release/dbayam (dbayam.exe)
+cargo build --release -p dbayam-app --features duckdb   # dengan engine DuckDB tertanam
+scripts/bundle-macos.sh                                # macOS: dist/DBayam.app, DBayam-<versi>.dmg dan .zip
 scripts/bundle-linux.sh                                # Linux: .deb, .rpm, paket Arch, AppImage dan .tar.gz
 pwsh scripts/bundle-windows.ps1                        # Windows: installer dan .zip (perlu Inno Setup 6)
 ```
@@ -148,7 +154,7 @@ Bahasa antarmuka dan tema diatur di **Settings → General**.
 
 ## Pembaruan
 
-Jika Anda mengizinkan, DBiji mencari rilis baru setiap kali dibuka dan setiap 6 jam. Versi baru
+Jika Anda mengizinkan, DBayam mencari rilis baru setiap kali dibuka dan setiap 6 jam. Versi baru
 membuka dialog berisi versi saat ini, versi baru, dan apa saja yang baru (jika ditemukan belakangan,
 muncul tombol **Update** di toolbar tanpa mengganggu pekerjaan Anda). Di Windows, **Download**
 mengunduh installer baru (jalankan di atas versi yang terpasang); di Linux membuka halaman rilis
@@ -156,28 +162,28 @@ berisi paket-paketnya. Di macOS, **Install update**:
 
 1. mengunduh versi baru dan memverifikasinya (ukuran, SHA-256 yang diterbitkan GitHub, bundle id,
    versi dan tanda tangan kode);
-2. setelah **Restart now**, menutup DBiji (skrip yang belum disimpan ditanyakan dulu), memasang
+2. setelah **Restart now**, menutup DBayam (skrip yang belum disimpan ditanyakan dulu), memasang
    aplikasi baru, lalu membukanya lagi; salinan sebelumnya dikembalikan jika ada yang gagal.
 
 macOS meminta kata sandi administrator hanya jika user Anda tidak bisa mengganti aplikasinya.
 Help → Check for updates… langsung memeriksa; **Skip this version** dan **Remind me later** juga
-tersedia. Setelah diperbarui, DBiji menampilkan apa saja yang berubah (juga di Help → What's new;
+tersedia. Setelah diperbarui, DBayam menampilkan apa saja yang berubah (juga di Help → What's new;
 semua catatan ada di [CHANGELOG.md](CHANGELOG.md)). Installer satu baris di atas juga bisa
-memperbarui, dan pengguna Homebrew memperbarui dengan `brew upgrade --cask dbiji`. Pemeriksaan
+memperbarui, dan pengguna Homebrew memperbarui dengan `brew upgrade --cask dbayam`. Pemeriksaan
 pembaruan hanya satu permintaan anonim ke GitHub; tidak ada data tentang Anda atau database Anda yang
 dikirim.
 
-Pembaruan langsung memerlukan DBiji di `/Applications` (atau folder lain yang bisa ditulisi); versi
+Pembaruan langsung memerlukan DBayam di `/Applications` (atau folder lain yang bisa ditulisi); versi
 0.3.0 adalah versi pertama dengan updater.
 
 ## Baris perintah
 
 ```text
-dbiji [FILE.sql | DATABASE.db ...]   buka skrip, file SQLite / DuckDB
-dbiji --execute FILE.db FILE.sql     buka lalu jalankan skrip di database itu
-dbiji --run-task <id|nama>           jalankan task tersimpan tanpa jendela (exit code 0/1/2/3)
-dbiji --portable <DIR>               simpan semua pengaturan dan data di DIR
-dbiji --bench all                    benchmark startup, memori, grid, dan editor
+dbayam [FILE.sql | DATABASE.db ...]   buka skrip, file SQLite / DuckDB
+dbayam --execute FILE.db FILE.sql     buka lalu jalankan skrip di database itu
+dbayam --run-task <id|nama>           jalankan task tersimpan tanpa jendela (exit code 0/1/2/3)
+dbayam --portable <DIR>               simpan semua pengaturan dan data di DIR
+dbayam --bench all                    benchmark startup, memori, grid, dan editor
 ```
 
 ## Pintasan keyboard
@@ -197,11 +203,11 @@ dbiji --bench all                    benchmark startup, memori, grid, dan editor
 | Simpan skrip / data | `⌘S` |
 
 Di Windows dan Linux, `⌘` adalah `Ctrl`, `⌥` adalah `Alt`, dan `⌃` juga `Ctrl`. Semua pintasan bisa
-diubah di **Settings → Keyboard shortcuts** (preset DBiji atau DBeaver).
+diubah di **Settings → Keyboard shortcuts** (preset DBayam atau DBeaver).
 
 ## Performa
 
-Diukur pada build rilis (Apple M1 Pro) dengan `dbiji --bench all`:
+Diukur pada build rilis (Apple M1 Pro) dengan `dbayam --bench all`:
 
 | | Target | Hasil |
 | --- | --- | --- |
@@ -214,29 +220,29 @@ Diukur pada build rilis (Apple M1 Pro) dengan `dbiji --bench all`:
 
 ## Keamanan dan data
 
-- Tanpa telemetri. DBiji hanya terhubung ke server yang Anda atur dan, jika diaktifkan, ke penyedia
+- Tanpa telemetri. DBayam hanya terhubung ke server yang Anda atur dan, jika diaktifkan, ke penyedia
   AI Anda serta ke GitHub untuk pemeriksaan pembaruan (satu permintaan anonim untuk rilis terbaru
-  saat DBiji dibuka dan setiap 6 jam; ditanyakan sekali, bisa diubah di Settings → General).
+  saat DBayam dibuka dan setiap 6 jam; ditanyakan sekali, bisa diubah di Settings → General).
 - Kata sandi dan kunci API disimpan di penyimpanan kredensial sistem (macOS Keychain, Windows
   Credential Manager, Secret Service di Linux) atau `vault.bin` (Argon2id + XChaCha20-Poly1305);
   file konfigurasi ditulis dengan mode 0600.
 - Pengaturan, koneksi, skrip, riwayat, dan task ada di
-  `~/Library/Application Support/dev.dbiji.DBiji/` di macOS, `%APPDATA%\dbiji\DBiji\` di Windows, dan
-  `~/.config/dbiji/` + `~/.local/share/dbiji/` di Linux (atau `DBIJI_HOME` / `--portable`).
+  `~/Library/Application Support/dev.dbayam.DBayam/` di macOS, `%APPDATA%\dbayam\DBayam\` di Windows, dan
+  `~/.config/dbayam/` + `~/.local/share/dbayam/` di Linux (atau `DBAYAM_HOME` / `--portable`).
 
 ## Build dan pengujian
 
 ```sh
-cargo test --workspace --exclude dbiji-driver-duckdb
+cargo test --workspace --exclude dbayam-driver-duckdb
 # uji integrasi terhadap server sungguhan (Docker):
-export DBIJI_TEST_PG=postgres://dbiji:dbiji@127.0.0.1:55432/dbiji
-export DBIJI_TEST_MYSQL=mysql://root:dbiji@127.0.0.1:53306/dbiji
-export DBIJI_TEST_MARIADB=mariadb://root:dbiji@127.0.0.1:53307/dbiji
-export DBIJI_TEST_COCKROACH='cockroachdb://root@127.0.0.1:26257/defaultdb?sslmode=disable'
-cargo test -p dbiji-app
+export DBAYAM_TEST_PG=postgres://dbayam:dbayam@127.0.0.1:55432/dbayam
+export DBAYAM_TEST_MYSQL=mysql://root:dbayam@127.0.0.1:53306/dbayam
+export DBAYAM_TEST_MARIADB=mariadb://root:dbayam@127.0.0.1:53307/dbayam
+export DBAYAM_TEST_COCKROACH='cockroachdb://root@127.0.0.1:26257/defaultdb?sslmode=disable'
+cargo test -p dbayam-app
 ```
 
-Tanda tangan dan notarisasi: atur `DBIJI_SIGN_IDENTITY` (Developer ID) dan `DBIJI_NOTARY_PROFILE`
+Tanda tangan dan notarisasi: atur `DBAYAM_SIGN_IDENTITY` (Developer ID) dan `DBAYAM_NOTARY_PROFILE`
 sebelum menjalankan `scripts/bundle-macos.sh`.
 
 Struktur proyek ada di [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), matriks paritas DBeaver di
@@ -255,4 +261,4 @@ Struktur proyek ada di [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), matriks par
 
 MIT OR Apache-2.0.
 
-Font Inter yang disertakan (`crates/dbiji-app/assets/fonts`) berlisensi SIL Open Font License 1.1 (`Inter-LICENSE.txt`).
+Font Inter yang disertakan (`crates/dbayam-app/assets/fonts`) berlisensi SIL Open Font License 1.1 (`Inter-LICENSE.txt`).

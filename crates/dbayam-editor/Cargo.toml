@@ -1,0 +1,22 @@
+[package]
+name = "dbayam-editor"
+description = "SQL code editor widget for DBayam"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+dbayam-core.workspace = true
+egui.workspace = true
+egui-phosphor.workspace = true
+serde.workspace = true
+tracing.workspace = true
+regex.workspace = true
+
+[dev-dependencies]
+eframe.workspace = true
+egui = { workspace = true, features = ["default_fonts"] }
+serde_json.workspace = true
+image.workspace = true
